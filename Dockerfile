@@ -1,8 +1,3 @@
-TE: THIS DOCKERFILE IS GENERATED VIA "update.sh"
-#
-# PLEASE DO NOT EDIT IT DIRECTLY.
-#
-
 FROM debian:stretch-slim
 
 # ensure local python is preferred over distribution python
