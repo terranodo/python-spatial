@@ -1,10 +1,9 @@
-#
-# NOTE: THIS DOCKERFILE IS GENERATED VIA "update.sh"
+TE: THIS DOCKERFILE IS GENERATED VIA "update.sh"
 #
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
-FROM buildpack-deps:jessie
+FROM debian:stretch-slim
 
 # ensure local python is preferred over distribution python
 ENV PATH /usr/local/bin:$PATH
@@ -15,19 +14,42 @@ ENV LANG C.UTF-8
 
 # runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-		tcl \
-		tk \
+		ca-certificates \
+		libexpat1 \
+		libffi6 \
+		libgdbm3 \
+		libreadline7 \
+		libsqlite3-0 \
+		libssl1.1 \
+                libsqlite3-mod-spatialite \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV GPG_KEY 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
 ENV PYTHON_VERSION 3.6.3
 
 RUN set -ex \
-	&& buildDeps=' \
+	&& buildDeps=" \
 		dpkg-dev \
+		gcc \
+		libbz2-dev \
+		libc6-dev \
+		libexpat1-dev \
+		libffi-dev \
+		libgdbm-dev \
+		liblzma-dev \
+		libncursesw5-dev \
+		libreadline-dev \
+		libsqlite3-dev \
+		libssl-dev \
+		make \
 		tcl-dev \
 		tk-dev \
-	' \
+		wget \
+		xz-utils \
+		zlib1g-dev \
+# as of Stretch, "gpg" is no longer included by default
+		$(command -v gpg > /dev/null || echo 'gnupg dirmngr') \
+	" \
 	&& apt-get update && apt-get install -y $buildDeps --no-install-recommends && rm -rf /var/lib/apt/lists/* \
 	\
 	&& wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
@@ -75,7 +97,13 @@ ENV PYTHON_PIP_VERSION 9.0.1
 
 RUN set -ex; \
 	\
+	apt-get update; \
+	apt-get install -y --no-install-recommends wget; \
+	rm -rf /var/lib/apt/lists/*; \
+	\
 	wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py'; \
+	\
+	apt-get purge -y --auto-remove wget; \
 	\
 	python get-pip.py \
 		--disable-pip-version-check \
@@ -91,7 +119,5 @@ RUN set -ex; \
 			\( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
 		\) -exec rm -rf '{}' +; \
 	rm -f get-pip.py
-
-RUN apt-get install -y libsqlite3-mod-spatialite
 
 CMD ["python3"]
